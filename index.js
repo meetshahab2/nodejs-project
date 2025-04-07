@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const authRoutes = require('./auth/authRoutes');
 
-console.log(authRoutes);
+//console.log(authRoutes);
 
 app.use(express.json());
 app.use('/api/auth', authRoutes);
