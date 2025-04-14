@@ -30,29 +30,25 @@ jobs:
       - name: 🚀 Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
 
+      # Login to Heroku
+      - name: 🚀 Login to Heroku
+        run: echo ${{ secrets.HEROKU_API_KEY }} | heroku auth:token
+
+      # Add Heroku git remote
+      - name: 🚀 Add Heroku remote
+        run: git remote add heroku https://git.heroku.com/${{ secrets.HEROKU_APP_NAME }}.git
+
       # 🚀 Deploy step for `main` branch (adjust if needed)
       - name: 🚀 Deploy to Heroku (main)
         if: github.ref == 'refs/heads/main'
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: "your-heroku-app-name"
-          heroku_email: "your-email@example.com"
+        run: git push heroku HEAD:refs/heads/main --force
 
       # 🚀 Deploy step for `shahab` branch (optional)
       - name: 🚀 Deploy to Heroku (shahab)
         if: github.ref == 'refs/heads/shahab'
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-            heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-            heroku_app_name: "nodejs-api-staging"
-            heroku_email: "meetshahab2@gmail.com"
+        run: git push heroku HEAD:refs/heads/main --force
 
       # 🚀 Deploy step for `syed` branch (optional)
       - name: 🚀 Deploy to Heroku (syed)
         if: github.ref == 'refs/heads/syed'
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-            heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-            heroku_app_name: "nodejs-api-staging"
-            heroku_email: "developerweb50@gmail.com"
+        run: git push heroku HEAD:refs/heads/main --force
