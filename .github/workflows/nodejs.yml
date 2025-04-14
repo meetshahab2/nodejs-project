@@ -1,0 +1,55 @@
+# .github/workflows/ci-cd.yml
+name: Node.js CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, shahab, syed]
+  pull_request:
+    branches: [main, shahab, syed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🏁 Basic run check (optional)
+        run: npm start &
+        continue-on-error: true
+
+      # 🚀 Deploy step for `main` branch (adjust if needed)
+      - name: 🚀 Deploy to Heroku (main)
+        if: github.ref == 'refs/heads/main'
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: "your-heroku-app-name"
+          heroku_email: "your-email@example.com"
+
+      # 🚀 Deploy step for `shahab` branch (optional)
+      - name: 🚀 Deploy to Heroku (shahab)
+        if: github.ref == 'refs/heads/shahab'
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+            heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+            heroku_app_name: "nodejs-api-staging"
+            heroku_email: "meetshahab2@gmail.com"
+
+      # 🚀 Deploy step for `syed` branch (optional)
+      - name: 🚀 Deploy to Heroku (syed)
+        if: github.ref == 'refs/heads/syed'
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+            heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+            heroku_app_name: "nodejs-api-staging"
+            heroku_email: "developer50@gmail.com"
