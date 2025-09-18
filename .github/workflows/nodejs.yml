@@ -2,9 +2,9 @@ name: Node.js CI/CD Pipeline
 
 on:
   push:
-    branches: [main, shahab, syed]
+    branches: [main, shahab]
   pull_request:
-    branches: [main, shahab, syed]
+    branches: [main, shahab]
 
 jobs:
   deploy:
@@ -30,7 +30,7 @@ jobs:
       - name: 🚀 Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
 
-      # 🚀 Deploy step for `main` branch (adjust if needed)
+      # 🚀 Deploy step for `main` branch
       - name: 🚀 Deploy to Heroku (main)
         if: github.ref == 'refs/heads/main'
         uses: akhileshns/heroku-deploy@v3.12.12
@@ -39,20 +39,11 @@ jobs:
           heroku_app_name: "your-heroku-app-name"
           heroku_email: "your-email@example.com"
 
-      # 🚀 Deploy step for `shahab` branch (optional)
+      # 🚀 Deploy step for `shahab` branch
       - name: 🚀 Deploy to Heroku (shahab)
         if: github.ref == 'refs/heads/shahab'
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
-            heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-            heroku_app_name: "nodejs-api-staging"
-            heroku_email: "meetshahab2@gmail.com"
-
-      # 🚀 Deploy step for `syed` branch (optional)
-      - name: 🚀 Deploy to Heroku (syed)
-        if: github.ref == 'refs/heads/syed'
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-            heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-            heroku_app_name: "nodejs-api-staging"
-            heroku_email: "developerweb50@gmail.com"
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: "nodejs-api-staging"
+          heroku_email: "meetshahab2@gmail.com"
