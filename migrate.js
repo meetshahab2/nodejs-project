@@ -8,18 +8,36 @@ const connection = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
-const createTableQuery = `
+const createUsersTableQuery = `
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+);
 `;
 
-connection.query(createTableQuery, (err, result) => {
+const createTokenTableQuery = `
+CREATE TABLE IF NOT EXISTS user_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+`;
+
+connection.query(createUsersTableQuery, (err) => {
   if (err) throw err;
   console.log('✅ Users table created or already exists');
-  connection.end();
+
+  connection.query(createTokenTableQuery, (err) => {
+    if (err) throw err;
+    console.log('✅ User tokens table created or already exists');
+
+    connection.end();
+  });
 });

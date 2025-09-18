@@ -1,42 +1,44 @@
 const db = require('../config/db');
 
 const createUser = async (user) => {
-  return new Promise((resolve, reject) => {
-    const query = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
-    const values = [user.name, user.email, user.password];
-    db.query(query, values, (err, result) => {
-      if (err) return reject(err);
-      resolve({
-        id: result.insertId,
-        name: user.name,
-        email: user.email
-      });
-    });
+  const [id] = await db('users').insert({
+    name: user.name,
+    email: user.email,
+    password: user.password,
   });
+
+  return { id, name: user.name, email: user.email };
 };
 
 const findByEmail = async (email) => {
-  return new Promise((resolve, reject) => {
-    const query = 'SELECT * FROM users WHERE email = ? LIMIT 1';
-    db.query(query, [email], (err, results) => {
-      if (err) return reject(err);
-      resolve(results.length > 0 ? results[0] : null);
-    });
-  });
+  return await db('users').where({ email }).first();
 };
 
 const findUserById = async (id) => {
-  return new Promise((resolve, reject) => {
-    db.query('SELECT id, name, email FROM users WHERE id = ?', [id], (err, results) => {
-      if (err) return reject(err);
-      if (results.length === 0) return resolve(null);
-      resolve(results[0]);
-    });
-  });
+  return await db('users').select('id', 'name', 'email').where({ id }).first();
+};
+
+const saveTokens = async (userId, accessToken, refreshToken, accessExpiry, refreshExpiry) => {
+  await db('user_tokens')
+    .insert({
+      user_id: userId,
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      access_expires_at: accessExpiry,
+      refresh_expires_at: refreshExpiry,
+    })
+    .onConflict('user_id')
+    .merge([
+      'access_token',
+      'refresh_token',
+      'access_expires_at',
+      'refresh_expires_at',
+    ]);
 };
 
 module.exports = {
   createUser,
   findUserById,
-  findByEmail
+  findByEmail,
+  saveTokens,
 };
