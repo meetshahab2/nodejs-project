@@ -24,7 +24,6 @@ function secureEncrypt(payload, key) {
     return response;
 }
 
-
 function renderNotFound(res) {
     return res.status(404).render("404", {
         title: "Oops! Nothing here",
@@ -39,5 +38,6 @@ module.exports = {
     secureEncrypt,
     renderNotFound
 };
+
 
 
