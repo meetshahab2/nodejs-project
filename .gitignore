@@ -37,13 +37,5 @@ temp/
 # Operating System
 .DS_Store
 Thumbs.db
+.vscode/
 
-# Runtime
-pids/
-*.pid
-*.seed
-
-# Optional lock files (uncomment only if your team doesn't use them)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
