@@ -7,7 +7,7 @@ exports.register = async (req, res) => {
   } catch (error) {
     console.error("Register error:", error);
 
-    if (error.code === '23505') {   // 👈 ye check missing hoga
+    if (error.code === '23505') {   
       return res.status(409).json({ message: "Email already registered" });
     }
 
