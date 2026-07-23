@@ -10,10 +10,7 @@ exports.getAllCategories = async () => {
 };
 
 exports.findByName = async (name) => {
-  const category = await knex("categories")
-    .where({ name })
-    .first();
-  return category;
+  return await knex('categories').where({ name }).first();
 };
 
 exports.findCategoryById = async (id) => {
@@ -23,7 +20,7 @@ exports.findCategoryById = async (id) => {
 exports.updateCategory = async (id, data) => {
   const affectedRows = await knex('categories').where({ id }).update(data);
   if (affectedRows === 0) return null;
-  return this.findCategoryById(id);
+  return exports.findCategoryById(id);
 };
 
 exports.deleteCategory = async (id) => {

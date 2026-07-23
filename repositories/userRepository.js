@@ -1,21 +1,30 @@
 const db = require('../config/db');
 
 const createUser = async (user) => {
-  const [id] = await db('users').insert({
-    name: user.name,
-    email: user.email,
-    password: user.password,
-  });
+  const email = user.email.toLowerCase().trim();
 
-  return { id, name: user.name, email: user.email };
+  const [newUser] = await db('users')
+    .insert({
+      name: user.name,
+      email,
+      password: user.password,
+    })
+    .returning(['id', 'name', 'email']); // Postgres ke liye zaroori — bina isके insert() se row wapas nahi milti
+
+  return newUser; // { id, name, email }
 };
 
 const findByEmail = async (email) => {
-  return await db('users').where({ email }).first();
+  return await db('users')
+    .where({ email: email.toLowerCase().trim() })
+    .first();
 };
 
 const findUserById = async (id) => {
-  return await db('users').select('id', 'name', 'email').where({ id }).first();
+  return await db('users')
+    .select('id', 'name', 'email')
+    .where({ id })
+    .first();
 };
 
 const saveTokens = async (userId, accessToken, refreshToken, accessExpiry, refreshExpiry) => {
@@ -27,7 +36,7 @@ const saveTokens = async (userId, accessToken, refreshToken, accessExpiry, refre
       access_expires_at: accessExpiry,
       refresh_expires_at: refreshExpiry,
     })
-    .onConflict('user_id')
+    .onConflict('user_id') // requires UNIQUE constraint on user_tokens.user_id
     .merge([
       'access_token',
       'refresh_token',
@@ -36,9 +45,16 @@ const saveTokens = async (userId, accessToken, refreshToken, accessExpiry, refre
     ]);
 };
 
+const findRefreshToken = async (userId, refreshToken) => {
+  return await db('user_tokens')
+    .where({ user_id: userId, refresh_token: refreshToken })
+    .first();
+};
+
 module.exports = {
   createUser,
   findUserById,
   findByEmail,
   saveTokens,
+  findRefreshToken,
 };

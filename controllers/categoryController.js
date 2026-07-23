@@ -1,18 +1,26 @@
 const categoryService = require('../services/categoryService');
 
-
 exports.create = async (req, res) => {
   try {
+    if (!req.body || !req.body.name) {
+      return res.status(400).json({ message: "Category name is required" });
+    }
+
     const category = await categoryService.create(req.body);
     res.status(201).json({
       message: "Category created successfully",
       category
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Category create error:", error);
+
+    if (error.message === "The category name must be unique") {
+      return res.status(409).json({ message: error.message }); // 👈 add karo
+    }
+
+    res.status(500).json({ message: "Failed to create category" });
   }
 };
-
 
 exports.getAll = async (req, res) => {
   try {
@@ -22,7 +30,8 @@ exports.getAll = async (req, res) => {
       categories
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Category getAll error:", error);
+    res.status(500).json({ message: "Failed to fetch categories" });
   }
 };
 
@@ -37,12 +46,17 @@ exports.getById = async (req, res) => {
       category
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Category getById error:", error);
+    res.status(500).json({ message: "Failed to fetch category" });
   }
 };
 
 exports.update = async (req, res) => {
   try {
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ message: "No update data provided" });
+    }
+
     const updatedCategory = await categoryService.update(req.params.id, req.body);
     if (!updatedCategory) {
       return res.status(404).json({ message: "Category not found" });
@@ -52,7 +66,8 @@ exports.update = async (req, res) => {
       category: updatedCategory
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Category update error:", error);
+    res.status(500).json({ message: "Failed to update category" });
   }
 };
 
@@ -64,6 +79,7 @@ exports.delete = async (req, res) => {
     }
     res.status(200).json({ message: "Category deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Category delete error:", error);
+    res.status(500).json({ message: "Failed to delete category" });
   }
 };
