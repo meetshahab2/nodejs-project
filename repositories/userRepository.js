@@ -36,7 +36,7 @@ const saveTokens = async (userId, accessToken, refreshToken, accessExpiry, refre
       access_expires_at: accessExpiry,
       refresh_expires_at: refreshExpiry,
     })
-    .onConflict('user_id') // requires UNIQUE constraint on user_tokens.user_id
+    .onConflict('user_id') 
     .merge([
       'access_token',
       'refresh_token',

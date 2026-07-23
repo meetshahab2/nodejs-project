@@ -15,7 +15,7 @@ exports.create = async (req, res) => {
     console.error("Category create error:", error);
 
     if (error.message === "The category name must be unique") {
-      return res.status(409).json({ message: error.message }); // 👈 add karo
+      return res.status(409).json({ message: error.message }); 
     }
 
     res.status(500).json({ message: "Failed to create category" });
