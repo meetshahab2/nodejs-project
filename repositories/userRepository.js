@@ -9,7 +9,7 @@ const createUser = async (user) => {
       email,
       password: user.password,
     })
-    .returning(['id', 'name', 'email']); // Postgres ke liye zaroori — bina isके insert() se row wapas nahi milti
+    .returning(['id', 'name', 'email']); 
 
   return newUser; // { id, name, email }
 };
