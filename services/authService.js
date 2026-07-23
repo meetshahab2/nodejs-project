@@ -1,6 +1,7 @@
 const userRepository = require('../repositories/userRepository');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const knex = require('../config/db'); 
 
 function generateTokens(user) {
   const accessToken = jwt.sign(
@@ -18,6 +19,25 @@ function generateTokens(user) {
   return { accessToken, refreshToken };
 }
 
+async function saveTokens(userId, accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry) {
+  await knex('user_tokens')
+    .insert({
+      user_id: userId,
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      access_expires_at: accessTokenExpiry,
+      refresh_expires_at: refreshTokenExpiry
+    })
+    .onConflict('user_id') // needs UNIQUE constraint on user_id
+    .merge({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      access_expires_at: accessTokenExpiry,
+      refresh_expires_at: refreshTokenExpiry,
+      updated_at: knex.fn.now()
+    });
+}
+
 exports.register = async (userData) => {
   const hashedPassword = await bcrypt.hash(userData.password, 10);
   const user = await userRepository.createUser({ ...userData, password: hashedPassword });
@@ -25,60 +45,42 @@ exports.register = async (userData) => {
   const { accessToken, refreshToken } = generateTokens(user);
 
   return {
+    success: true,
     status: 201,
-    data: { accessToken, refreshToken, user }
+    data: {
+      accessToken,
+      refreshToken,
+      user: { id: user.id, name: user.name, email: user.email } 
+    }
   };
 };
 
 exports.getProfile = async (userId) => {
   const user = await userRepository.findUserById(userId);
-  if (!user) {
-    throw new Error('User not found');
-  }
-  return user;
+  if (!user) throw new Error('User not found');
+  const { password, ...safeUser } = user;
+  return safeUser;
 };
 
 exports.login = async (email, password) => {
-
   const user = await userRepository.findByEmail(email);
-  if (!user) throw new Error('User not found');
+  if (!user) throw new Error('Invalid credentials');
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error('Invalid credentials');
 
   const { accessToken, refreshToken } = generateTokens(user);
 
+  const accessTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
+  const refreshTokenExpiry = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
 
-  const accessTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-  const refreshTokenExpiry = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
+  await saveTokens(user.id, accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry); // 👈 ab call ho raha hai
 
-  const saveTokens = async (userId, accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry) => {
-    await knex('user_tokens')
-      .insert({
-        user_id: userId,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        access_expires_at: accessTokenExpiry,
-        refresh_expires_at: refreshTokenExpiry
-      })
-      .onDuplicateUpdate({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        access_expires_at: accessTokenExpiry,
-        refresh_expires_at: refreshTokenExpiry,
-        updated_at: knex.fn.now()
-      });
-  };
-  
   return {
     accessToken,
     refreshToken,
     accessTokenExpiry,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email
-    }
+    user: { id: user.id, name: user.name, email: user.email }
   };
 };
 

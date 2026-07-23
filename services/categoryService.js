@@ -1,41 +1,35 @@
 const categoryRepository = require('../repositories/categoryRepository');
-
+const db = require('../config/db');
 exports.create = async (categoryData) => {
-  
-  const existing = await categoryRepository.findByName(categoryData.name);
-  if (existing) {
-    throw new Error("The category name must be unique");
-  }
+  const [category] = await db('categories')
+    .insert({
+      name: categoryData.name,
+      description: categoryData.description || null,
+    })
+    .returning(['id', 'name', 'description', 'created_at']); 
 
-  const category = await categoryRepository.createCategory(categoryData);
   return category;
 };
 
 exports.getAll = async () => {
-  const categories = await categoryRepository.getAllCategories();
-  return categories;
+  return await categoryRepository.getAllCategories();
 };
 
 exports.getById = async (id) => {
-  const category = await categoryRepository.findCategoryById(id);
-  if (!category) {
-    throw new Error('Category not found');
-  }
-  return category;
+  return await categoryRepository.findCategoryById(id);
 };
 
 exports.update = async (id, updateData) => {
-  const updatedCategory = await categoryRepository.updateCategory(id, updateData);
-  if (!updatedCategory) {
-    throw new Error('Category not found');
+  if (updateData.name) {
+    const existing = await categoryRepository.findByName(updateData.name.trim());
+    if (existing && existing.id != id) {
+      throw new Error("The category name must be unique");
+    }
+    updateData.name = updateData.name.trim();
   }
-  return updatedCategory;
+  return await categoryRepository.updateCategory(id, updateData);
 };
 
 exports.delete = async (id) => {
-  const deleted = await categoryRepository.deleteCategory(id);
-  if (!deleted) {
-    throw new Error('Category not found');
-  }
-  return deleted;
+  return await categoryRepository.deleteCategory(id);
 };
